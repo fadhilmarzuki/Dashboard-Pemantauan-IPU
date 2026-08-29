@@ -107,12 +107,22 @@
   .tag-segera { background: #FCEBEB; color: #501313; }
   .tag-jangka-pendek { background: #FAEEDA; color: #633806; }
   .tag-jangka-panjang { background: #E6F1FB; color: #042C53; }
+  .tag-baik { background: #EAF3DE; color: #27500A; }
+  .tag-sederhana { background: #FAEEDA; color: #633806; }
+  .tag-kawalan { background: #E6F1FB; color: #042C53; }
+  .tag-pemantauan { background: #E6F1FB; color: #042C53; }
+  .tag-logistik { background: #f0efec; color: #52514e; }
+  .tag-penyelarasan { background: #E6F1FB; color: #042C53; }
+  .tag-kritikal { background: #FCEBEB; color: #501313; }
+  .tag-sangat-kritikal { background: #FCEBEB; color: #3B0000; font-size: 9px; }
+  .tag-bahaya { background: #3B0000; color: #fff; }
   .interv-title { font-size: 13px; font-weight: 600; color: #0b0b0b; }
   .interv-list { list-style: none; padding: 0; }
   .interv-list li { font-size: 12px; color: #52514e; padding: 4px 0; border-bottom: 1px solid #f0efec; display: flex; gap: 6px; line-height: 1.45; }
   .interv-list li:last-child { border-bottom: none; }
   .interv-list li::before { content: '→'; color: #898781; flex-shrink: 0; margin-top: 1px; }
 
+  .intervention-section { margin-bottom: 1.5rem; }
   footer { text-align: center; font-size: 11px; color: #898781; padding: 2rem 1rem; border-top: 1px solid #e1e0d9; margin-top: 1rem; }
 </style>
 </head>
@@ -234,97 +244,34 @@
     </div>
   </div>
 
-  <!-- Penemuan Utama -->
+  <!-- Penemuan Utama (Dinamik) -->
   <div class="section-title" style="margin-bottom:0.75rem;">🔍 Penemuan Utama</div>
-  <div class="finding-grid">
-    <div class="finding-card">
-      <div class="finding-icon finding-icon-red">📈</div>
-      <div>
-        <div class="finding-title">Langkawi — Lonjakan IPU Mendadak</div>
-        <div class="finding-desc">IPU Langkawi meningkat daripada <strong>87 (Sederhana)</strong> pada pukul 6 petang kepada lebih <strong>155 (Tidak Sihat)</strong> — kenaikan lebih 80% dalam masa kurang 16 jam, menunjukkan kemerosotan progresif sepanjang malam.</div>
-      </div>
-    </div>
-    <div class="finding-card">
-      <div class="finding-icon finding-icon-amber">⚠️</div>
-      <div>
-        <div class="finding-title">Alor Setar &amp; Sungai Petani — Konsisten Tidak Sihat</div>
-        <div class="finding-desc">Kedua-dua stesen kekal dalam julat <strong>154–162 (Tidak Sihat)</strong> sepanjang tempoh pemantauan tanpa sebarang penurunan, mencadangkan punca pencemaran yang berterusan.</div>
-      </div>
-    </div>
-    <div class="finding-card">
-      <div class="finding-icon finding-icon-green">⚠️</div>
-      <div>
-        <div class="finding-title">Kulim Hi-Tech — Kini Memasuki Tidak Sihat</div>
-        <div class="finding-desc">Stesen Kulim bermula pada julat Sederhana (87–99), namun meningkat kepada <strong>109–110 (Tidak Sihat)</strong> menjelang tengah hari — menunjukkan pencemaran terus merebak ke kawasan selatan Kedah.</div>
-      </div>
-    </div>
-    <div class="finding-card">
-      <div class="finding-icon finding-icon-blue">🌙</div>
-      <div>
-        <div class="finding-title">Pencemaran Memuncak Waktu Malam</div>
-        <div class="finding-desc">Bacaan IPU tertinggi dicatatkan antara <strong>2:00 pagi – 10:00 pagi</strong> di semua stesen — berkemungkinan berkaitan fenomena <em>nocturnal inversion</em> yang memerangkap bahan pencemar berhampiran permukaan bumi.</div>
-      </div>
+  <div id="findings-container" class="finding-grid">
+    <div class="finding-card" style="grid-column:1/-1;justify-content:center;">
+      <div style="color:#898781;font-size:13px;text-align:center;padding:1rem;">Memuatkan penemuan...</div>
     </div>
   </div>
 
-  <!-- Cadangan Intervensi Kesihatan Awam -->
-  <div class="section-title" style="margin-bottom:0.75rem;">🏥 Cadangan Intervensi Kesihatan Awam</div>
-  <div class="intervention-grid">
-    <div class="intervention-card">
-      <div class="interv-header">
-        <span class="interv-tag tag-segera">Segera</span>
-        <span class="interv-title">Perlindungan Individu</span>
-      </div>
-      <ul class="interv-list">
-        <li>Pakai pelitup muka (N95 atau sekurang-kurangnya 3-ply) apabila keluar rumah terutama di kawasan Alor Setar dan Sungai Petani</li>
-        <li>Kumpulan berisiko tinggi (kanak-kanak, warga emas, pesakit asma &amp; jantung) dinasihatkan kekal di dalam rumah</li>
-        <li>Tutup tingkap dan pintu semasa bacaan IPU melebihi 100 untuk mengelak udara tercemar masuk</li>
-        <li>Tangguhkan aktiviti luar intensiti tinggi seperti senaman, sukan, dan kerja berat di kawasan terbuka</li>
-      </ul>
-    </div>
-    <div class="intervention-card">
-      <div class="interv-header">
-        <span class="interv-tag tag-segera">Segera</span>
-        <span class="interv-title">Tindakan Pihak Berkuasa</span>
-      </div>
-      <ul class="interv-list">
-        <li>Keluarkan notifikasi awam melalui SMS blast, media sosial rasmi JAS dan pihak berkuasa tempatan Kedah</li>
-        <li>Tangguhkan atau batalkan aktiviti luar sekolah, sukan, dan majlis awam di kawasan terjejas</li>
-        <li>Sediakan bilik rujuk kecemasan di klinik kesihatan berdekatan untuk kes pernafasan akut</li>
-        <li>Kenal pasti dan pantau premis perindustrian di sekitar Alor Setar dan Sungai Petani sebagai punca potensi</li>
-      </ul>
-    </div>
-    <div class="intervention-card">
-      <div class="interv-header">
-        <span class="interv-tag tag-jangka-pendek">Jangka Pendek</span>
-        <span class="interv-title">Pemantauan &amp; Kawalan</span>
-      </div>
-      <ul class="interv-list">
-        <li>Tingkatkan kekerapan pemantauan APIMS kepada setiap 30 minit semasa episod IPU melebihi 100</li>
-        <li>Jalankan siasatan punca pencemaran untuk mengenal pasti sumber utama di Langkawi, Alor Setar, dan Sungai Petani</li>
-        <li>Aktifkan pasukan gerak pantas JAS untuk pemeriksaan premis industri dan kawasan pembakaran terbuka</li>
-        <li>Kuatkuasa larangan pembakaran terbuka secara serta-merta di seluruh negeri Kedah</li>
-      </ul>
-    </div>
-    <div class="intervention-card">
-      <div class="interv-header">
-        <span class="interv-tag tag-jangka-panjang">Jangka Panjang</span>
-        <span class="interv-title">Dasar &amp; Pencegahan</span>
-      </div>
-      <ul class="interv-list">
-        <li>Perkukuh rangkaian stesen pemantauan APIMS di Kedah — tambah stesen di kawasan pedalaman dan kawasan tumpuan penduduk padat</li>
-        <li>Bangunkan sistem amaran awal berasaskan model cuaca dan trend IPU historik</li>
-        <li>Integrasi data IPU dengan sistem maklumat kesihatan awam untuk pengesanan kes pernafasan</li>
-        <li>Galakkan penggunaan pengangkutan awam dan kenderaan elektrik bagi mengurangkan pelepasan daripada sektor pengangkutan</li>
-      </ul>
-    </div>
+  <!-- Cadangan Intervensi (Dinamik) -->
+  <div class="section-title" style="margin-bottom:0.5rem;">🏥 Cadangan Intervensi Kesihatan</div>
+  <div style="font-size:11px;color:#898781;margin-bottom:0.75rem;">Berdasarkan Pelan Tindakan Pengurusan Kesihatan Akibat Jerebu, KKM 2020</div>
+
+  <!-- Tab Intervensi -->
+  <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;" id="interv-tabs">
+    <button class="tab-btn active" onclick="showIntervTab('awam', this)">👥 Orang Awam</button>
+    <button class="tab-btn" onclick="showIntervTab('pkd', this)">🏥 PKD / Klinik Kesihatan</button>
+    <button class="tab-btn" onclick="showIntervTab('jkn', this)">🏛 JKN / Hospital</button>
   </div>
+
+  <div id="interv-awam" class="intervention-section"></div>
+  <div id="interv-pkd" class="intervention-section" style="display:none;"></div>
+  <div id="interv-jkn" class="intervention-section" style="display:none;"></div>
 
 </div><!-- end container -->
 
 <footer>
   Sumber data: APIMS (Air Pollutant Index of Malaysia) — Jabatan Alam Sekitar Malaysia<br>
-  Dashboard ini membaca data secara terus dari Google Sheets • Auto-refresh setiap 2 jam
+  Cadangan intervensi merujuk: <em>Pelan Tindakan Pengurusan Kesihatan Akibat Jerebu, KKM 2020</em> • Auto-refresh setiap 2 jam
 </footer>
 
 <script>
@@ -568,6 +515,12 @@ function updateDashboard(records) {
   document.getElementById('main-alert').style.display = maxVal > 100 ? 'block' : 'none';
 
   initTabs();
+
+  // Generate dynamic findings & interventions
+  generateFindings(grouped, latestMap);
+  const worstStations = Object.values(latestMap).filter(r => r.api > 100).map(r => r.location.split(',')[0].trim());
+  const allStationNames = Object.values(latestMap).map(r => r.location.split(',')[0].trim());
+  generateInterventions(maxVal, worstStations, allStationNames);
 }
 
 // ── FETCH DATA ────────────────────────────────────────────────────────────────
@@ -603,6 +556,389 @@ async function fetchData() {
     btn.disabled = false;
     icon.textContent = '↻';
   }
+}
+
+// ── TAB INTERVENSI ────────────────────────────────────────────────────────────
+function showIntervTab(tab, btn) {
+  ['awam','pkd','jkn'].forEach(t => {
+    document.getElementById('interv-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('#interv-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── PENEMUAN UTAMA DINAMIK ────────────────────────────────────────────────────
+function generateFindings(grouped, latestMap) {
+  const findings = [];
+  const stationNames = Object.values(latestMap).map(r => r.location.split(',')[0].trim());
+  const latestVals = Object.values(latestMap).map(r => r.api);
+  const maxVal = Math.max(...latestVals);
+  const minVal = Math.min(...latestVals);
+  const unhealthyStations = Object.values(latestMap).filter(r => r.api > 100).map(r => r.location.split(',')[0].trim());
+  const healthyStations = Object.values(latestMap).filter(r => r.api <= 100).map(r => r.location.split(',')[0].trim());
+
+  // 1. Stesen dengan lonjakan terbesar
+  Object.entries(grouped).forEach(([id, rows]) => {
+    const sorted = [...rows].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+    if (sorted.length < 2) return;
+    const first = sorted[0].api;
+    const last = sorted[sorted.length - 1].api;
+    const delta = last - first;
+    const pct = Math.round((delta / first) * 100);
+    const name = sorted[0].location.split(',')[0].trim();
+    if (delta >= 20) {
+      findings.push({
+        icon: '📈', iconClass: 'finding-icon-red',
+        title: `${name} — Lonjakan IPU Mendadak`,
+        desc: `IPU ${name} meningkat sebanyak <strong>${delta} mata (${pct}%)</strong> dari <strong>${first}</strong> kepada <strong>${last}</strong> sepanjang tempoh pemantauan — menunjukkan kemerosotan kualiti udara yang progresif.`
+      });
+    }
+  });
+
+  // 2. Stesen konsisten tidak sihat (semua bacaan >100)
+  const consistentUnhealthy = [];
+  Object.entries(grouped).forEach(([id, rows]) => {
+    const allUnhealthy = rows.every(r => r.api > 100);
+    const name = rows[0].location.split(',')[0].trim();
+    if (allUnhealthy && rows.length >= 3) consistentUnhealthy.push(name);
+  });
+  if (consistentUnhealthy.length > 0) {
+    findings.push({
+      icon: '⚠️', iconClass: 'finding-icon-amber',
+      title: `${consistentUnhealthy.join(' & ')} — Konsisten Tidak Sihat`,
+      desc: `Stesen ${consistentUnhealthy.join(' dan ')} kekal pada tahap <strong>Tidak Sihat (IPU > 100)</strong> sepanjang keseluruhan tempoh pemantauan — mencadangkan punca pencemaran yang berterusan dan tidak bersifat sementara.`
+    });
+  }
+
+  // 3. Stesen yang baru masuk tahap tidak sihat (awal sederhana, akhir tidak sihat)
+  Object.entries(grouped).forEach(([id, rows]) => {
+    const sorted = [...rows].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+    if (sorted.length < 3) return;
+    const firstFew = sorted.slice(0, Math.ceil(sorted.length / 3));
+    const lastFew = sorted.slice(-Math.ceil(sorted.length / 3));
+    const avgFirst = firstFew.reduce((s,r) => s+r.api, 0) / firstFew.length;
+    const avgLast = lastFew.reduce((s,r) => s+r.api, 0) / lastFew.length;
+    const name = sorted[0].location.split(',')[0].trim();
+    if (avgFirst <= 100 && avgLast > 100) {
+      findings.push({
+        icon: '🔺', iconClass: 'finding-icon-amber',
+        title: `${name} — Memasuki Tahap Tidak Sihat`,
+        desc: `Stesen ${name} bermula pada tahap <strong>Sederhana (IPU ≤100)</strong> namun kini telah meningkat kepada <strong>Tidak Sihat (IPU ${Math.round(avgLast)})</strong> — pencemaran terus merebak ke kawasan ini.`
+      });
+    }
+  });
+
+  // 4. Stesen paling baik
+  if (healthyStations.length > 0) {
+    findings.push({
+      icon: '✅', iconClass: 'finding-icon-green',
+      title: `${healthyStations.join(', ')} — Kualiti Udara Lebih Baik`,
+      desc: `Stesen ${healthyStations.join(' dan ')} mencatatkan IPU terendah iaitu <strong>${minVal}</strong> — relatif lebih baik berbanding stesen lain di Kedah walaupun pemantauan berterusan diperlukan.`
+    });
+  }
+
+  // 5. Semua stesen tidak sihat
+  if (unhealthyStations.length === Object.keys(latestMap).length) {
+    findings.push({
+      icon: '🚨', iconClass: 'finding-icon-red',
+      title: 'Seluruh Kedah Terjejas',
+      desc: `Kesemua <strong>${Object.keys(latestMap).length} stesen</strong> pemantauan di Kedah mencatatkan bacaan <strong>Tidak Sihat (IPU > 100)</strong>. Keadaan ini memerlukan tindakan segera dari semua pihak berkuasa berkaitan.`
+    });
+  }
+
+  // 6. Trend masa — peak malam/pagi
+  let peakHour = null, peakVal = 0;
+  Object.values(grouped).forEach(rows => {
+    rows.forEach(r => {
+      if (r.api > peakVal) { peakVal = r.api; peakHour = r.timestamp; }
+    });
+  });
+  if (peakHour) {
+    const h = new Date(peakHour).getHours();
+    if (h >= 0 && h <= 10) {
+      findings.push({
+        icon: '🌙', iconClass: 'finding-icon-blue',
+        title: 'Pencemaran Memuncak Waktu Malam / Awal Pagi',
+        desc: `Bacaan IPU tertinggi (<strong>${peakVal}</strong>) dicatatkan pada waktu malam hingga awal pagi — berkemungkinan berkaitan fenomena <em>nocturnal inversion</em> yang memerangkap bahan pencemar berhampiran permukaan bumi semasa suhu rendah.`
+      });
+    }
+  }
+
+  // Render
+  const container = document.getElementById('findings-container');
+  if (findings.length === 0) {
+    container.innerHTML = `<div class="finding-card" style="grid-column:1/-1;"><div style="color:#898781;font-size:13px;">Tiada penemuan kritikal pada masa ini. Kualiti udara dalam keadaan terkawal.</div></div>`;
+    return;
+  }
+  container.innerHTML = findings.map(f => `
+    <div class="finding-card">
+      <div class="finding-icon ${f.iconClass}">${f.icon}</div>
+      <div>
+        <div class="finding-title">${f.title}</div>
+        <div class="finding-desc">${f.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── INTERVENSI DINAMIK BERDASARKAN IPU (KKM 2020) ───────────────────────────
+function generateInterventions(maxIPU, worstStations, allStationNames) {
+  const stationList = worstStations.join(', ');
+
+  // Tentukan tahap berdasarkan IPU tertinggi
+  let level, levelColor, levelBg;
+  if (maxIPU <= 50) { level = 'Baik (0–50)'; levelColor = '#27500A'; levelBg = '#EAF3DE'; }
+  else if (maxIPU <= 100) { level = 'Sederhana (51–100)'; levelColor = '#633806'; levelBg = '#FAEEDA'; }
+  else if (maxIPU <= 200) { level = 'Tidak Sihat (101–200)'; levelColor = '#4A1B0C'; levelBg = '#FAECE7'; }
+  else if (maxIPU <= 300) { level = 'Sangat Tidak Sihat (201–300)'; levelColor = '#501313'; levelBg = '#FCEBEB'; }
+  else { level = 'Bahaya (>300)'; levelColor = '#3B0000'; levelBg = '#FCEBEB'; }
+
+  const isBadge = `<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;background:${levelBg};color:${levelColor};">IPU Semasa: ${maxIPU} — ${level}</span>`;
+
+  // ── AWAM ──
+  let awamCards = [];
+
+  if (maxIPU <= 50) {
+    awamCards = [{
+      tag:'Baik', tagClass:'tag-baik', title:'Tiada Sekatan Aktiviti',
+      items:['Tiada sekatan untuk semua golongan — teruskan aktiviti harian seperti biasa','Amalkan cara hidup sihat — senaman, pengudaraan rumah yang baik','Pastikan penyaman udara diselenggara secara berkala']
+    }];
+  } else if (maxIPU <= 100) {
+    awamCards = [{
+      tag:'Sederhana', tagClass:'tag-sederhana', title:'Nasihat Am Kesihatan',
+      items:['Tiada sekatan aktiviti — boleh keluar seperti biasa','Orang yang sensitif (asma, penyakit paru-paru) mulai berhati-hati','Elak merokok untuk mengurangkan kesan tambahan pencemaran','Minum air yang cukup untuk mengekalkan hidrasi']
+    }];
+  } else if (maxIPU <= 200) {
+    awamCards = [
+      {
+        tag:'Segera', tagClass:'tag-segera', title:'Perlindungan Diri',
+        items:[
+          `Pakai pelitup muka <strong>N95</strong> jika keluar rumah — terutama di ${stationList}`,
+          'Golongan berisiko tinggi (kanak-kanak, warga emas, wanita hamil, pesakit asma & jantung) <strong>kekal di dalam rumah</strong>',
+          'Tutup tingkap dan pintu rumah untuk elak udara tercemar masuk',
+          'Hidupkan penghawa dingin mod <em>kitaran dalam (recirculation)</em>',
+          'Tangguhkan aktiviti riadah dan sukan di luar rumah',
+          'Banyak minum air kosong dan kerap basuh tangan & muka'
+        ]
+      },
+      {
+        tag:'Segera', tagClass:'tag-segera', title:'Sekolah & Institusi',
+        items:[
+          'Semua aktiviti kokurikulum dan fizikal di luar bangunan <strong>dihentikan</strong>',
+          'Ibu bapa yang bimbang boleh membawa pulang anak — tidak ada sekatan sekolah pada tahap ini',
+          'Taska dan pusat jagaan warga emas pastikan pengudaraan dalam bangunan baik',
+          'Elak sebarang aktiviti pembakaran terbuka'
+        ]
+      },
+      {
+        tag:'Nasihat', tagClass:'tag-jangka-pendek', title:'Pekerja Luar & Pemandu',
+        items:[
+          'Pekerja yang bekerja di luar pejabat <strong>dapatkan nasihat doktor</strong> sebelum meneruskan kerja lapangan',
+          'Majikan perlu menyediakan pelitup muka N95 kepada pekerja luar',
+          'Pemandu kenderaan — nyalakan lampu untuk keselamatan jalan raya',
+          'Gunakan mod kitaran dalam untuk kenderaan berhawa dingin'
+        ]
+      }
+    ];
+  } else if (maxIPU <= 300) {
+    awamCards = [
+      {
+        tag:'Sangat Kritikal', tagClass:'tag-segera', title:'Perlindungan Diri — Dipertingkatkan',
+        items:[
+          'Pakai pelitup muka <strong>N95</strong> wajib jika terpaksa keluar — surgical mask tidak mencukupi',
+          'Orang awam <strong>dinasihatkan tinggal di dalam rumah</strong> sepenuhnya',
+          'Golongan berisiko tinggi <strong>dilarang keluar</strong> — termasuk kanak-kanak, warga emas, wanita hamil, pesakit kronik',
+          'Tutup semua tingkap dan pintu, hidupkan penghawa dingin mod kitaran dalam',
+          'Segera dapatkan rawatan jika mengalami sesak nafas, batuk teruk, atau sakit mata'
+        ]
+      },
+      {
+        tag:'Sangat Kritikal', tagClass:'tag-segera', title:'Sekolah & Majlis Awam',
+        items:[
+          'Sekolah, tadika dan taska <strong>disyorkan ditutup</strong>',
+          'Semua aktiviti majlis keramaian di kawasan terbuka <strong>dibatalkan</strong>',
+          'Elak sepenuhnya aktiviti pembakaran terbuka'
+        ]
+      }
+    ];
+  } else {
+    awamCards = [{
+      tag:'BAHAYA', tagClass:'tag-segera', title:'Arahan Pihak Berkuasa',
+      items:[
+        'Orang awam <strong>dikehendaki tinggal di dalam rumah</strong>',
+        'Patuhi arahan Majlis Keselamatan Negara (MKN) / NADMA',
+        'Ikuti perkembangan melalui media massa dan media sosial rasmi',
+        'Pemandu nyalakan lampu kenderaan — jarak penglihatan terhad',
+        'Galakkan perkongsian kenderaan (car pool) jika terpaksa keluar'
+      ]
+    }];
+  }
+
+  // ── PKD / KLINIK KESIHATAN ──
+  let pkdCards = [];
+
+  if (maxIPU <= 100) {
+    pkdCards = [{
+      tag:'Pemantauan', tagClass:'tag-jangka-pendek', title:'Survelan Rutin',
+      items:[
+        'Teruskan survelan epidemiologi bulanan penyakit berkaitan jerebu (asma akut, URTI, konjunktivitis)',
+        'Hantar reten bulanan ke Unit KPAS Daerah selewat-lewatnya 3hb bulan berikutnya',
+        'Pastikan stok ubatan dan PPE mencukupi'
+      ]
+    }];
+  } else if (maxIPU <= 200) {
+    pkdCards = [
+      {
+        tag:'Segera', tagClass:'tag-segera', title:'Aktifkan Alert & Survelan Harian',
+        items:[
+          `<strong>Alert kepada semua fasiliti kesihatan di daerah</strong> — ${allStationNames.join(', ')} terjejas`,
+          'Tingkatkan survelan epidemiologi harian: asma akut, URTI, konjunktivitis',
+          'Hantar reten harian ke Unit KPAS JKN <strong>sebelum jam 9.00 pagi</strong> hari berikutnya',
+          'Pantau bilangan kedatangan pesakit luar dan kemasukan ke wad setiap hari',
+          'Edarkan pelitup muka kepada pesakit berisiko yang hadir ke klinik',
+          'Aktifkan Bilik Gerakan PKD jika IPU melebihi 150 selama > 24 jam'
+        ]
+      },
+      {
+        tag:'Logistik', tagClass:'tag-jangka-pendek', title:'Kesiapsiagaan Fasiliti',
+        items:[
+          'Pastikan stok nebulizer, peak flow meter, tangki oksigen & topeng oksigen mencukupi',
+          'Bekalan ubat bronkodilator dan kortikosteroid disemak dan ditambah jika perlu',
+          'Anggota kesihatan yang bertugas di luar <strong>wajib memakai pelitup muka N95</strong>',
+          'Sediakan jadual petugas jerebu dan pastikan semua boleh dihubungi',
+          'Tingkatkan promosi kesihatan — edar poster, hebahan risalah, ceramah'
+        ]
+      }
+    ];
+  } else if (maxIPU <= 300) {
+    pkdCards = [
+      {
+        tag:'Sangat Kritikal', tagClass:'tag-segera', title:'Aktifkan Bilik Gerakan',
+        items:[
+          '<strong>Aktifkan Bilik Gerakan Peringkat PKD</strong> — beroperasi setiap hari termasuk hujung minggu',
+          'Hantar reten harian ke KPAS Negeri <strong>sebelum jam 10.00 pagi</strong>',
+          'Pantau bilangan kes asma akut, URTI, dan konjunktivitis — laporan harian kepada JKN',
+          'Anggota luar lapangan <strong>wajib memakai N95</strong> sepanjang masa bertugas',
+          'Bekukan cuti anggota kesihatan yang bertugas',
+          'Pastikan keperluan logistik: nebulizer, oksigen, ubatan bronkodilator mencukupi'
+        ]
+      },
+      {
+        tag:'Kawalan', tagClass:'tag-jangka-pendek', title:'Kawalan Denggi Semasa Jerebu',
+        items:[
+          'Aktiviti PTP dan semburan (SRT/SRULV) <strong>hanya di lokaliti wabak/WTK/Hotspot</strong>',
+          'Aktiviti semburan: pagi 6:30–8:30 atau petang 5:30–7:30 — pilih masa jerebu tidak kuat',
+          'Gunakan racun serangga formulasi <strong>Water-based</strong> untuk kurangkan asap',
+          'Anggota semburan <strong>wajib memakai N95</strong> — anggota bermasalah kesihatan dikecualikan',
+          'Bagi lokaliti satu kes — ganti dengan pendidikan kesihatan (risalah, aerosol, repellan)'
+        ]
+      }
+    ];
+  } else {
+    pkdCards = [{
+      tag:'BAHAYA', tagClass:'tag-segera', title:'Tindakan Darurat PKD',
+      items:[
+        'Bilik Gerakan beroperasi 24 jam — ikut arahan Jawatankuasa Teknikal (Kesihatan) JKN/KKM',
+        'Pemantauan IPU setiap jam melalui APIMS JAS / App MyIPU',
+        'Semua aktiviti kawalan denggi lapangan dihentikan — ganti dengan aktiviti alternatif',
+        'Patuhi Arahan 20 daripada MKN / NADMA / CPRC KKM',
+        'Laporan kecemasan terus kepada JKN setiap 2 jam'
+      ]
+    }];
+  }
+
+  // ── JKN / HOSPITAL ──
+  let jknCards = [];
+
+  if (maxIPU <= 100) {
+    jknCards = [{
+      tag:'Pemantauan', tagClass:'tag-jangka-pendek', title:'Survelan Rutin Hospital',
+      items:[
+        'Teruskan survelan epidemiologi bulanan — kes asma akut ke ED dan kemasukan wad',
+        'Hospital sentinel hantar reten ke KPAS Daerah selewat-lewatnya 3hb bulan berikutnya',
+        'Pastikan stok peralatan pernafasan dan ubatan mencukupi'
+      ]
+    }];
+  } else if (maxIPU <= 200) {
+    jknCards = [
+      {
+        tag:'Segera', tagClass:'tag-segera', title:'Alert Fasiliti Hospital',
+        items:[
+          'Alert semua hospital sentinel — hantar data harian kes asma akut ke ED dan kemasukan wad',
+          'Hantar reten harian ke KPAS Negeri <strong>sebelum jam 12.00 tengahari</strong>',
+          `Pantau bilangan kedatangan pesakit berkaitan jerebu dari kawasan ${stationList}`,
+          'Sediakan bilik kecemasan tambahan untuk kes pernafasan akut jika perlu',
+          'Hospital wajib <strong>menutup tingkap</strong> untuk kurangkan pencemaran dalam bangunan'
+        ]
+      },
+      {
+        tag:'Penyelarasan', tagClass:'tag-jangka-pendek', title:'Pengurusan & Laporan JKN',
+        items:[
+          'JKN Kedah aktifkan Jawatankuasa Pengurusan Bencana Peringkat Negeri',
+          'Kompilasi data dari semua daerah dan analisa trend penyakit — laporan kepada KKM',
+          'Keluarkan hebahan awam melalui media massa dan media sosial rasmi',
+          'Pastikan inventori N95 dan PPE di semua fasiliti cukup — agihkan jika perlu',
+          'Selaraskan bantuan dari NGO dan agensi luar jika diperlukan',
+          `Aktifkan Bilik Gerakan JKN jika IPU > 200 di lebih 2 daerah selama > 24 jam`
+        ]
+      }
+    ];
+  } else if (maxIPU <= 300) {
+    jknCards = [
+      {
+        tag:'Sangat Kritikal', tagClass:'tag-segera', title:'Aktifkan Bilik Gerakan JKN',
+        items:[
+          '<strong>Aktifkan Bilik Gerakan JKN Kedah</strong> — beroperasi setiap hari termasuk hujung minggu dan cuti umum',
+          'Hantar laporan harian kepada BKP/KPAS KKM <strong>sebelum jam 12.00 tengahari</strong>',
+          'Semua hospital sentinel hantar reten harian sebelum jam 8.00 pagi',
+          'Pastikan hospital menutup tingkap dan tingkatkan pengudaraan dalam bangunan',
+          'Bekukan cuti anggota kesihatan — pastikan semua boleh dihubungi pada bila-bila masa'
+        ]
+      },
+      {
+        tag:'Kritikal', tagClass:'tag-segera', title:'Nasihat Penutupan Sekolah',
+        items:[
+          'Sekolah, tadika dan taska di kawasan terjejas <strong>disarankan ditutup</strong>',
+          'Semua aktiviti majlis keramaian luar <strong>dibatalkan</strong>',
+          'Maklumkan kepada Jabatan Pelajaran Negeri untuk tindakan sewajarnya',
+          'Nasihati kerajaan negeri berkaitan aktiviti pencegahan dan kawalan jerebu',
+          'Semak dan agihkan bekalan logistik (nebulizer, oksigen, N95) ke daerah yang memerlukan'
+        ]
+      }
+    ];
+  } else {
+    jknCards = [{
+      tag:'BAHAYA', tagClass:'tag-segera', title:'Tindakan Darurat JKN',
+      items:[
+        'Bilik Gerakan JKN beroperasi 24 jam atas arahan Jawatankuasa Teknikal Kebangsaan',
+        'Hubungi CPRC KKM setiap 2 jam untuk kemaskini situasi',
+        'Selaraskan dengan MKN/NADMA untuk tindakan darurat',
+        'Pastikan semua hospital dalam keadaan sedia untuk lonjakan kes pernafasan akut',
+        'Patuhi Arahan 20 MKN — bersedia untuk pengisytiharan darurat jika IPU > 500'
+      ]
+    }];
+  }
+
+  // Render helper
+  function renderCards(cards, containerId) {
+    document.getElementById(containerId).innerHTML = `
+      <div style="margin-bottom:0.75rem;">${isBadge}</div>
+      <div class="intervention-grid">
+        ${cards.map(c => `
+          <div class="intervention-card">
+            <div class="interv-header">
+              <span class="interv-tag tag-${c.tagClass.replace('tag-','')}">${c.tag}</span>
+              <span class="interv-title">${c.title}</span>
+            </div>
+            <ul class="interv-list">
+              ${c.items.map(i => `<li>${i}</li>`).join('')}
+            </ul>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  renderCards(awamCards, 'interv-awam');
+  renderCards(pkdCards, 'interv-pkd');
+  renderCards(jknCards, 'interv-jkn');
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
