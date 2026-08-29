@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard IPU Kedah — APIMS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3ee; color: #0b0b0b; min-height: 100vh; }
+
+  header { background: #fff; border-bottom: 1px solid #e1e0d9; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+  .header-left h1 { font-size: 18px; font-weight: 600; color: #0b0b0b; }
+  .header-left p { font-size: 12px; color: #898781; margin-top: 2px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 99px; }
+  .badge-tidak-sihat { background: #FAECE7; color: #4A1B0C; }
+  .badge-sederhana { background: #FAEEDA; color: #633806; }
+  .badge-baik { background: #EAF3DE; color: #27500A; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card { background: #fff; border-radius: 10px; border: 1px solid #e1e0d9; padding: 1rem 1.1rem; }
+  .stat-label { font-size: 11px; color: #898781; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-val { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat-sub { font-size: 11px; color: #52514e; margin-top: 4px; }
+  .val-red { color: #D85A30; }
+  .val-green { color: #1D9E75; }
+
+  .section-title { font-size: 12px; font-weight: 600; color: #52514e; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.25rem; }
+
+  .station-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .station-table th { font-size: 11px; color: #898781; font-weight: 500; text-align: left; padding: 4px 0 8px; border-bottom: 1px solid #e1e0d9; }
+  .station-table td { padding: 10px 0 6px; border-bottom: 1px solid #f0efec; vertical-align: middle; }
+  .station-table tr:last-child td { border-bottom: none; }
+  .ipu-num { font-size: 18px; font-weight: 600; }
+
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .tab-btn { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid #d3d1c7; background: transparent; color: #52514e; cursor: pointer; transition: all 0.15s; }
+  .tab-btn:hover { background: #f4f3ee; }
+  .tab-btn.active { background: #0b0b0b; border-color: #0b0b0b; color: #fff; }
+
+  .legend-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 0.75rem; font-size: 11px; color: #52514e; }
+  .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  .chart-wrap { position: relative; width: 100%; height: 220px; }
+
+  /* Leaflet Map */
+  #map { width: 100%; height: 340px; border-radius: 8px; z-index: 1; }
+  .custom-marker { display: flex; flex-direction: column; align-items: center; }
+  .marker-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+  .marker-label { font-size: 10px; font-weight: 700; margin-top: 3px; white-space: nowrap; text-shadow: 1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff; }
+
+  /* Alert */
+  .alert { background: #FAEEDA; border-left: 4px solid #BA7517; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 13px; color: #4A2E00; }
+  .alert strong { display: block; margin-bottom: 3px; font-size: 13px; }
+
+  /* IPU scale bar */
+  .scale-bar { height: 8px; border-radius: 99px; background: linear-gradient(to right, #63c776 0%, #f0c040 25%, #f28a30 50%, #e84545 75%, #8b3a8b 100%); margin-bottom: 4px; }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 10px; color: #898781; }
+
+  /* Refresh bar */
+  .refresh-bar { background: #fff; border: 1px solid #e1e0d9; border-radius: 10px; padding: 0.75rem 1.1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .refresh-info { font-size: 12px; color: #52514e; line-height: 1.5; }
+  .refresh-info span { color: #898781; }
+  .refresh-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 8px; border: 1px solid #d3d1c7; background: #0b0b0b; color: #fff; cursor: pointer; transition: background 0.15s; }
+  .refresh-btn:hover { background: #333; }
+  .refresh-btn:disabled { background: #c3c2b7; border-color: #c3c2b7; cursor: not-allowed; }
+  .spin { display: inline-block; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-ok { color: #1D9E75; font-weight: 500; }
+  .status-err { color: #D85A30; font-weight: 500; }
+  .status-loading { color: #898781; }
+
+  /* Trend arrows */
+  .trend-up { color: #D85A30; font-size: 15px; font-weight: 700; }
+  .trend-down { color: #1D9E75; font-size: 15px; font-weight: 700; }
+  .trend-stable { color: #898781; font-size: 15px; font-weight: 700; }
+
+  /* Penemuan Utama */
+  .finding-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .finding-grid { grid-template-columns: 1fr; } }
+  .finding-card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.1rem 1.25rem; display: flex; gap: 12px; align-items: flex-start; }
+  .finding-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .finding-icon-red { background: #FAECE7; }
+  .finding-icon-amber { background: #FAEEDA; }
+  .finding-icon-blue { background: #E6F1FB; }
+  .finding-icon-green { background: #EAF3DE; }
+  .finding-title { font-size: 13px; font-weight: 600; color: #0b0b0b; margin-bottom: 3px; }
+  .finding-desc { font-size: 12px; color: #52514e; line-height: 1.5; }
+
+  /* Cadangan Intervensi */
+  .intervention-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .intervention-grid { grid-template-columns: 1fr; } }
+  .intervention-card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.1rem 1.25rem; }
+  .interv-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .interv-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag-segera { background: #FCEBEB; color: #501313; }
+  .tag-jangka-pendek { background: #FAEEDA; color: #633806; }
+  .tag-jangka-panjang { background: #E6F1FB; color: #042C53; }
+  .interv-title { font-size: 13px; font-weight: 600; color: #0b0b0b; }
+  .interv-list { list-style: none; padding: 0; }
+  .interv-list li { font-size: 12px; color: #52514e; padding: 4px 0; border-bottom: 1px solid #f0efec; display: flex; gap: 6px; line-height: 1.45; }
+  .interv-list li:last-child { border-bottom: none; }
+  .interv-list li::before { content: '→'; color: #898781; flex-shrink: 0; margin-top: 1px; }
+
+  footer { text-align: center; font-size: 11px; color: #898781; padding: 2rem 1rem; border-top: 1px solid #e1e0d9; margin-top: 1rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Dashboard IPU Kedah</h1>
+    <p id="header-subtitle">Sumber: APIMS • Menunggu data...</p>
+  </div>
+  <span id="main-badge" class="badge badge-sederhana">Memuat...</span>
+</header>
+
+<div class="container">
+
+  <!-- Alert -->
+  <div class="alert" id="main-alert" style="display:none;">
+    <strong>⚠ Amaran Kualiti Udara — Kedah</strong>
+    Bacaan IPU di sesetengah kawasan berada pada tahap <strong>Tidak Sihat</strong>. Orang yang sensitif, kanak-kanak, dan warga emas disarankan untuk mengelak aktiviti luar rumah.
+  </div>
+
+  <!-- Refresh bar -->
+  <div class="refresh-bar">
+    <div class="refresh-info">
+      🔄 Data ditarik terus secara langsung dari Google Sheets (APIMS)<br>
+      <span>Kemaskini terakhir: <strong id="last-updated">—</strong> &nbsp;|&nbsp; Status: <span id="refresh-status" class="status-loading">Belum dimuat</span></span>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="fetchData()">
+      <span id="refresh-icon">↻</span> Muat Data Terbaru
+    </button>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="section-title" id="stat-title">Ringkasan terkini</div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">IPU Tertinggi</div>
+      <div class="stat-val val-red">—</div>
+      <div class="stat-sub">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">IPU Terendah</div>
+      <div class="stat-val val-green">—</div>
+      <div class="stat-sub">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Purata Kedah</div>
+      <div class="stat-val">—</div>
+      <div class="stat-sub">4 stesen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Stesen Tidak Sihat</div>
+      <div class="stat-val val-red">—</div>
+      <div class="stat-sub">Stesen dipantau</div>
+    </div>
+  </div>
+
+  <!-- IPU Scale -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-title" style="margin-bottom:0.75rem;">Skala Indeks Pencemaran Udara (IPU)</div>
+    <div class="scale-bar"></div>
+    <div class="scale-labels">
+      <span>0 — Baik</span>
+      <span>51 — Sederhana</span>
+      <span>101 — Tidak Sihat</span>
+      <span>201 — Sangat Tidak Sihat</span>
+      <span>300+ — Berbahaya</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Station table -->
+    <div class="card">
+      <div class="section-title">Bacaan setiap stesen</div>
+      <table class="station-table">
+        <thead>
+          <tr>
+            <th>Stesen</th>
+            <th style="text-align:right;">IPU</th>
+            <th style="text-align:center;">Trend</th>
+            <th style="text-align:right;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="station-tbody">
+          <tr><td colspan="4" style="text-align:center;color:#898781;padding:1.5rem 0;">Memuatkan data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Leaflet Map -->
+    <div class="card">
+      <div class="section-title">Peta lokasi stesen</div>
+      <div id="map"></div>
+      <div style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#52514e;">
+          <div style="width:11px;height:11px;border-radius:50%;background:#D85A30;"></div>Tidak Sihat
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#52514e;">
+          <div style="width:11px;height:11px;border-radius:50%;background:#BA7517;"></div>Sederhana
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#52514e;">
+          <div style="width:11px;height:11px;border-radius:50%;background:#1D9E75;"></div>Baik
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trend Chart -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-title">Trend IPU mengikut stesen</div>
+    <div class="tabs" id="station-tabs"></div>
+    <div class="legend-row">
+      <span class="leg"><span class="leg-sq" style="background:#EAF3DE;border:1px solid #639922;"></span>Baik (0–50)</span>
+      <span class="leg"><span class="leg-sq" style="background:#FAEEDA;border:1px solid #BA7517;"></span>Sederhana (51–100)</span>
+      <span class="leg"><span class="leg-sq" style="background:#FAECE7;border:1px solid #D85A30;"></span>Tidak Sihat (101–200)</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Penemuan Utama -->
+  <div class="section-title" style="margin-bottom:0.75rem;">🔍 Penemuan Utama</div>
+  <div class="finding-grid">
+    <div class="finding-card">
+      <div class="finding-icon finding-icon-red">📈</div>
+      <div>
+        <div class="finding-title">Langkawi — Lonjakan IPU Mendadak</div>
+        <div class="finding-desc">IPU Langkawi meningkat daripada <strong>87 (Sederhana)</strong> pada pukul 6 petang kepada lebih <strong>155 (Tidak Sihat)</strong> — kenaikan lebih 80% dalam masa kurang 16 jam, menunjukkan kemerosotan progresif sepanjang malam.</div>
+      </div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-icon finding-icon-amber">⚠️</div>
+      <div>
+        <div class="finding-title">Alor Setar &amp; Sungai Petani — Konsisten Tidak Sihat</div>
+        <div class="finding-desc">Kedua-dua stesen kekal dalam julat <strong>154–162 (Tidak Sihat)</strong> sepanjang tempoh pemantauan tanpa sebarang penurunan, mencadangkan punca pencemaran yang berterusan.</div>
+      </div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-icon finding-icon-green">⚠️</div>
+      <div>
+        <div class="finding-title">Kulim Hi-Tech — Kini Memasuki Tidak Sihat</div>
+        <div class="finding-desc">Stesen Kulim bermula pada julat Sederhana (87–99), namun meningkat kepada <strong>109–110 (Tidak Sihat)</strong> menjelang tengah hari — menunjukkan pencemaran terus merebak ke kawasan selatan Kedah.</div>
+      </div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-icon finding-icon-blue">🌙</div>
+      <div>
+        <div class="finding-title">Pencemaran Memuncak Waktu Malam</div>
+        <div class="finding-desc">Bacaan IPU tertinggi dicatatkan antara <strong>2:00 pagi – 10:00 pagi</strong> di semua stesen — berkemungkinan berkaitan fenomena <em>nocturnal inversion</em> yang memerangkap bahan pencemar berhampiran permukaan bumi.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cadangan Intervensi Kesihatan Awam -->
+  <div class="section-title" style="margin-bottom:0.75rem;">🏥 Cadangan Intervensi Kesihatan Awam</div>
+  <div class="intervention-grid">
+    <div class="intervention-card">
+      <div class="interv-header">
+        <span class="interv-tag tag-segera">Segera</span>
+        <span class="interv-title">Perlindungan Individu</span>
+      </div>
+      <ul class="interv-list">
+        <li>Pakai pelitup muka (N95 atau sekurang-kurangnya 3-ply) apabila keluar rumah terutama di kawasan Alor Setar dan Sungai Petani</li>
+        <li>Kumpulan berisiko tinggi (kanak-kanak, warga emas, pesakit asma &amp; jantung) dinasihatkan kekal di dalam rumah</li>
+        <li>Tutup tingkap dan pintu semasa bacaan IPU melebihi 100 untuk mengelak udara tercemar masuk</li>
+        <li>Tangguhkan aktiviti luar intensiti tinggi seperti senaman, sukan, dan kerja berat di kawasan terbuka</li>
+      </ul>
+    </div>
+    <div class="intervention-card">
+      <div class="interv-header">
+        <span class="interv-tag tag-segera">Segera</span>
+        <span class="interv-title">Tindakan Pihak Berkuasa</span>
+      </div>
+      <ul class="interv-list">
+        <li>Keluarkan notifikasi awam melalui SMS blast, media sosial rasmi JAS dan pihak berkuasa tempatan Kedah</li>
+        <li>Tangguhkan atau batalkan aktiviti luar sekolah, sukan, dan majlis awam di kawasan terjejas</li>
+        <li>Sediakan bilik rujuk kecemasan di klinik kesihatan berdekatan untuk kes pernafasan akut</li>
+        <li>Kenal pasti dan pantau premis perindustrian di sekitar Alor Setar dan Sungai Petani sebagai punca potensi</li>
+      </ul>
+    </div>
+    <div class="intervention-card">
+      <div class="interv-header">
+        <span class="interv-tag tag-jangka-pendek">Jangka Pendek</span>
+        <span class="interv-title">Pemantauan &amp; Kawalan</span>
+      </div>
+      <ul class="interv-list">
+        <li>Tingkatkan kekerapan pemantauan APIMS kepada setiap 30 minit semasa episod IPU melebihi 100</li>
+        <li>Jalankan siasatan punca pencemaran untuk mengenal pasti sumber utama di Langkawi, Alor Setar, dan Sungai Petani</li>
+        <li>Aktifkan pasukan gerak pantas JAS untuk pemeriksaan premis industri dan kawasan pembakaran terbuka</li>
+        <li>Kuatkuasa larangan pembakaran terbuka secara serta-merta di seluruh negeri Kedah</li>
+      </ul>
+    </div>
+    <div class="intervention-card">
+      <div class="interv-header">
+        <span class="interv-tag tag-jangka-panjang">Jangka Panjang</span>
+        <span class="interv-title">Dasar &amp; Pencegahan</span>
+      </div>
+      <ul class="interv-list">
+        <li>Perkukuh rangkaian stesen pemantauan APIMS di Kedah — tambah stesen di kawasan pedalaman dan kawasan tumpuan penduduk padat</li>
+        <li>Bangunkan sistem amaran awal berasaskan model cuaca dan trend IPU historik</li>
+        <li>Integrasi data IPU dengan sistem maklumat kesihatan awam untuk pengesanan kes pernafasan</li>
+        <li>Galakkan penggunaan pengangkutan awam dan kenderaan elektrik bagi mengurangkan pelepasan daripada sektor pengangkutan</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<footer>
+  Sumber data: APIMS (Air Pollutant Index of Malaysia) — Jabatan Alam Sekitar Malaysia<br>
+  Dashboard ini membaca data secara terus dari Google Sheets • Auto-refresh setiap 2 jam
+</footer>
+
+<script>
+// ── KONFIGURASI ──────────────────────────────────────────────────────────────
+const SHEET_ID = '1V_GWnMBPQ0SjFCQ9Noba5O-EoqFfgPX3kPPMs8Bxe0Y';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+const REFRESH_INTERVAL_MS = 2 * 60 * 60 * 1000;
+
+const chartColors = ['#2a78d6', '#D85A30', '#eb6834', '#1baf7a', '#8b3a8b', '#f0c040'];
+
+const mapCoordinates = {
+  'CA02K': { lat: 6.3264, lng: 99.8432 },
+  'CA03K': { lat: 6.1248, lng: 100.3678 },
+  'CA04K': { lat: 5.6436, lng: 100.4900 },
+  'CA05K': { lat: 5.4264, lng: 100.5753 }
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let stationData = {};
+let activeChart = null;
+let leafletMap, markersLayer;
+
+// ── PETA LEAFLET ─────────────────────────────────────────────────────────────
+function initMap() {
+  leafletMap = L.map('map').setView([6.1, 100.35], 8);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 18
+  }).addTo(leafletMap);
+  markersLayer = L.layerGroup().addTo(leafletMap);
+}
+
+function updateMapMarkers(latestMap) {
+  if (!markersLayer) return;
+  markersLayer.clearLayers();
+  Object.entries(latestMap).forEach(([id, r]) => {
+    const coords = mapCoordinates[id];
+    if (!coords) return;
+    const v = r.api;
+    const color = getValColor(v);
+    const locName = r.location.split(',')[0].trim();
+    const iconHtml = `
+      <div class="custom-marker">
+        <div class="marker-circle" style="background:${color};">${v}</div>
+        <div class="marker-label" style="color:${color};">${locName}</div>
+      </div>`;
+    const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [50, 45], iconAnchor: [25, 16] });
+    L.marker([coords.lat, coords.lng], { icon })
+      .bindPopup(`<strong>${locName}</strong><br>IPU: <strong style="color:${color}">${v}</strong><br>Status: ${getStatusLabel(v)}<br>Stesen: ${id}`)
+      .addTo(markersLayer);
+  });
+}
+
+// ── CHART ────────────────────────────────────────────────────────────────────
+const tabsEl = document.getElementById('station-tabs');
+
+function initTabs() {
+  tabsEl.innerHTML = '';
+  Object.keys(stationData).forEach((id, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = stationData[id].name;
+    btn.onclick = () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderChart(id);
+    };
+    tabsEl.appendChild(btn);
+  });
+  if (Object.keys(stationData).length > 0) renderChart(Object.keys(stationData)[0]);
+}
+
+function renderChart(stId) {
+  const sd = stationData[stId];
+  if (!sd) return;
+  if (activeChart) activeChart.destroy();
+  activeChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: sd.data.map(d => d.t),
+      datasets: [{
+        label: sd.name,
+        data: sd.data.map(d => d.v),
+        borderColor: sd.color,
+        backgroundColor: sd.color + '18',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: sd.color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              return ' IPU: ' + v + ' (' + getStatusLabel(v) + ')';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#898781', font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        y: { min: 0, ticks: { color: '#898781', font: { size: 11 }, stepSize: 20 }, grid: { color: 'rgba(0,0,0,0.05)' } }
+      }
+    }
+  });
+}
+
+// ── UTILITI ──────────────────────────────────────────────────────────────────
+function getStatusLabel(v) {
+  if (v <= 50) return 'Baik';
+  if (v <= 100) return 'Sederhana';
+  if (v <= 200) return 'Tidak Sihat';
+  return 'Sangat Tidak Sihat';
+}
+function getBadgeClass(v) {
+  if (v <= 50) return 'badge-baik';
+  if (v <= 100) return 'badge-sederhana';
+  return 'badge-tidak-sihat';
+}
+function getValColor(v) {
+  if (v <= 50) return '#1D9E75';
+  if (v <= 100) return '#BA7517';
+  return '#D85A30';
+}
+function formatTimeOnly(s) {
+  try {
+    return new Date(s).toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return s.substring(11, 16); }
+}
+
+// ── PARSE CSV ─────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').slice(1);
+  const records = [];
+  lines.forEach(line => {
+    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+    if (cols.length >= 4 && cols[0] && cols[3]) {
+      const api = parseFloat(cols[3]);
+      if (!isNaN(api)) records.push({ timestamp: cols[0], stationId: cols[1], location: cols[2], api });
+    }
+  });
+  return records;
+}
+
+// ── KEMASKINI DASHBOARD ───────────────────────────────────────────────────────
+function updateDashboard(records) {
+  const grouped = {};
+  records.forEach(r => {
+    if (!grouped[r.stationId]) grouped[r.stationId] = [];
+    grouped[r.stationId].push(r);
+  });
+
+  stationData = {};
+  let colorIndex = 0;
+  Object.keys(grouped).forEach(id => {
+    const rows = grouped[id].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    // Deduplicate by timestamp
+    const seen = new Set();
+    const unique = rows.filter(r => { if (seen.has(r.timestamp)) return false; seen.add(r.timestamp); return true; });
+    stationData[id] = {
+      name: unique[0].location.split(',')[0].trim(),
+      color: chartColors[colorIndex % chartColors.length],
+      data: unique.map(r => ({ t: formatTimeOnly(r.timestamp), v: r.api }))
+    };
+    colorIndex++;
+  });
+
+  // Latest per station
+  const latestMap = {};
+  records.forEach(r => {
+    if (!latestMap[r.stationId] || r.timestamp > latestMap[r.stationId].timestamp)
+      latestMap[r.stationId] = r;
+  });
+
+  const latestVals = Object.values(latestMap).map(r => r.api);
+  if (latestVals.length === 0) return;
+
+  const maxVal = Math.max(...latestVals);
+  const minVal = Math.min(...latestVals);
+  const avgVal = Math.round(latestVals.reduce((a, b) => a + b, 0) / latestVals.length);
+  const unhealthyCount = latestVals.filter(v => v > 100).length;
+
+  // Stat cards
+  const cards = document.querySelectorAll('.stat-card');
+  const maxEntry = Object.values(latestMap).find(r => r.api === maxVal);
+  const minEntry = Object.values(latestMap).find(r => r.api === minVal);
+  cards[0].querySelector('.stat-val').textContent = maxVal;
+  cards[0].querySelector('.stat-val').style.color = getValColor(maxVal);
+  cards[0].querySelector('.stat-sub').textContent = maxEntry?.location.split(',')[0] || '—';
+  cards[1].querySelector('.stat-val').textContent = minVal;
+  cards[1].querySelector('.stat-val').style.color = getValColor(minVal);
+  cards[1].querySelector('.stat-sub').textContent = minEntry?.location.split(',')[0] || '—';
+  cards[2].querySelector('.stat-val').textContent = avgVal;
+  cards[3].querySelector('.stat-val').textContent = unhealthyCount + '/' + latestVals.length;
+  cards[3].querySelector('.stat-val').style.color = unhealthyCount > 0 ? '#D85A30' : '#1D9E75';
+
+  // Station table
+  const tbody = document.getElementById('station-tbody');
+  tbody.innerHTML = '';
+  Object.entries(latestMap).forEach(([id, r]) => {
+    const v = r.api;
+    const rows3 = (grouped[id] || []).slice(-3).map(x => x.api);
+    const delta = rows3.length >= 2 ? rows3[rows3.length - 1] - rows3[0] : 0;
+    let trendHtml;
+    if (delta >= 3) trendHtml = '<span class="trend-up">↑</span><br><span style="font-size:10px;color:#D85A30;">Menaik</span>';
+    else if (delta <= -3) trendHtml = '<span class="trend-down">↓</span><br><span style="font-size:10px;color:#1D9E75;">Menurun</span>';
+    else trendHtml = '<span class="trend-stable">→</span><br><span style="font-size:10px;color:#898781;">Kekal</span>';
+    tbody.innerHTML += `<tr>
+      <td><div style="font-weight:500;">${r.location.split(',')[0].trim()}</div><div style="font-size:11px;color:#898781;">${id}</div></td>
+      <td style="text-align:right;"><span class="ipu-num" style="color:${getValColor(v)};">${v}</span></td>
+      <td style="text-align:center;">${trendHtml}</td>
+      <td style="text-align:right;"><span class="badge ${getBadgeClass(v)}">${getStatusLabel(v)}</span></td>
+    </tr>`;
+  });
+
+  // Update map markers
+  updateMapMarkers(latestMap);
+
+  // Header & badge
+  const latestTimeRaw = Object.values(latestMap).map(r => r.timestamp).sort().pop();
+  if (latestTimeRaw) {
+    try {
+      const d = new Date(latestTimeRaw);
+      const fmt = d.toLocaleString('ms-MY', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      document.getElementById('stat-title').textContent = 'Ringkasan terkini (' + fmt + ')';
+      document.getElementById('header-subtitle').textContent = 'Sumber: APIMS • Data terkini: ' + fmt;
+    } catch(e) {}
+  }
+  const badge = document.getElementById('main-badge');
+  badge.className = 'badge ' + getBadgeClass(maxVal);
+  badge.textContent = maxVal > 100 ? '⚠ Tidak Sihat' : (maxVal > 50 ? 'Sederhana' : 'Baik');
+  document.getElementById('main-alert').style.display = maxVal > 100 ? 'block' : 'none';
+
+  initTabs();
+}
+
+// ── FETCH DATA ────────────────────────────────────────────────────────────────
+async function fetchData() {
+  const btn = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  const statusEl = document.getElementById('refresh-status');
+  const lastEl = document.getElementById('last-updated');
+
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spin">↻</span>';
+  statusEl.className = 'status-loading';
+  statusEl.textContent = 'Sedang memuat data...';
+
+  try {
+    const res = await fetch(CSV_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const records = parseCSV(text);
+    if (records.length === 0) throw new Error('Tiada data ditemui dalam spreadsheet');
+
+    updateDashboard(records);
+
+    const now = new Date().toLocaleString('ms-MY', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    lastEl.textContent = now;
+    statusEl.className = 'status-ok';
+    statusEl.textContent = '✓ Berjaya (' + records.length + ' rekod)';
+  } catch (err) {
+    statusEl.className = 'status-err';
+    statusEl.textContent = err.message.includes('fetch') ? '✗ Gagal — Pastikan spreadsheet ditetapkan "Anyone with link can view"' : '✗ Ralat: ' + err.message;
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '↻';
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+setInterval(fetchData, REFRESH_INTERVAL_MS);
+
+window.onload = () => {
+  initMap();
+  fetchData();
+};
+</script>
+</body>
+</html>
