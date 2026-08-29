@@ -1,0 +1,607 @@
+```html
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard IPU Kedah — APIMS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3ee; color: #0b0b0b; min-height: 100vh; }
+
+  header { background: #fff; border-bottom: 1px solid #e1e0d9; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .header-left h1 { font-size: 18px; font-weight: 600; color: #0b0b0b; }
+  .header-left p { font-size: 12px; color: #898781; margin-top: 2px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 99px; }
+  .badge-tidak-sihat { background: #FAECE7; color: #4A1B0C; }
+  .badge-sederhana { background: #FAEEDA; color: #633806; }
+  .badge-baik { background: #EAF3DE; color: #27500A; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card { background: #fff; border-radius: 10px; border: 1px solid #e1e0d9; padding: 1rem 1.1rem; }
+  .stat-label { font-size: 11px; color: #898781; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-val { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat-sub { font-size: 11px; color: #52514e; margin-top: 4px; }
+  .val-red { color: #D85A30; }
+  .val-green { color: #1D9E75; }
+
+  .section-title { font-size: 12px; font-weight: 600; color: #52514e; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.25rem; }
+
+  .station-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .station-table th { font-size: 11px; color: #898781; font-weight: 500; text-align: left; padding: 4px 0 8px; border-bottom: 1px solid #e1e0d9; }
+  .station-table td { padding: 10px 0 6px; border-bottom: 1px solid #f0efec; vertical-align: middle; }
+  .station-table tr:last-child td { border-bottom: none; }
+  .ipu-num { font-size: 18px; font-weight: 600; }
+
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .tab-btn { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid #d3d1c7; background: transparent; color: #52514e; cursor: pointer; transition: all 0.15s; }
+  .tab-btn:hover { background: #f4f3ee; }
+  .tab-btn.active { background: #0b0b0b; border-color: #0b0b0b; color: #fff; }
+
+  .legend-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 0.75rem; font-size: 11px; color: #52514e; }
+  .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  .chart-wrap { position: relative; width: 100%; height: 220px; }
+
+  /* Map */
+  .map-card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.25rem; margin-bottom: 1.5rem; }
+  #map-svg { width: 100%; max-width: 500px; display: block; margin: 0 auto; }
+
+  /* Alert */
+  .alert { background: #FAEEDA; border-left: 4px solid #BA7517; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 13px; color: #4A2E00; }
+  .alert strong { display: block; margin-bottom: 3px; font-size: 13px; }
+
+  /* IPU scale bar */
+  .scale-bar { height: 8px; border-radius: 99px; background: linear-gradient(to right, #63c776 0%, #f0c040 25%, #f28a30 50%, #e84545 75%, #8b3a8b 100%); margin-bottom: 4px; }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 10px; color: #898781; }
+
+  footer { text-align: center; font-size: 11px; color: #898781; padding: 2rem 1rem; border-top: 1px solid #e1e0d9; margin-top: 1rem; }
+
+  .refresh-bar { background: #fff; border: 1px solid #e1e0d9; border-radius: 10px; padding: 0.75rem 1.1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .refresh-info { font-size: 12px; color: #52514e; line-height: 1.5; }
+  .refresh-info span { color: #898781; }
+  .refresh-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 8px; border: 1px solid #d3d1c7; background: #0b0b0b; color: #fff; cursor: pointer; transition: background 0.15s; }
+  .refresh-btn:hover { background: #333; }
+  .refresh-btn:disabled { background: #c3c2b7; border-color: #c3c2b7; cursor: not-allowed; }
+  .spin { display: inline-block; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-ok { color: #1D9E75; font-weight: 500; }
+  .status-err { color: #D85A30; font-weight: 500; }
+  .status-loading { color: #898781; }
+
+  /* Penemuan Utama */
+  .finding-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .finding-grid { grid-template-columns: 1fr; } }
+  .finding-card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.1rem 1.25rem; display: flex; gap: 12px; align-items: flex-start; }
+  .finding-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .finding-icon-red { background: #FAECE7; }
+  .finding-icon-amber { background: #FAEEDA; }
+  .finding-icon-blue { background: #E6F1FB; }
+  .finding-icon-green { background: #EAF3DE; }
+  .finding-title { font-size: 13px; font-weight: 600; color: #0b0b0b; margin-bottom: 3px; }
+  .finding-desc { font-size: 12px; color: #52514e; line-height: 1.5; }
+
+  /* Cadangan Intervensi */
+  .intervention-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .intervention-grid { grid-template-columns: 1fr; } }
+  .intervention-card { background: #fff; border-radius: 12px; border: 1px solid #e1e0d9; padding: 1.1rem 1.25rem; }
+  .interv-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .interv-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag-segera { background: #FCEBEB; color: #501313; }
+  .tag-jangka-pendek { background: #FAEEDA; color: #633806; }
+  .tag-jangka-panjang { background: #E6F1FB; color: #042C53; }
+  .interv-title { font-size: 13px; font-weight: 600; color: #0b0b0b; }
+  .interv-list { list-style: none; padding: 0; }
+  .interv-list li { font-size: 12px; color: #52514e; padding: 4px 0; border-bottom: 1px solid #f0efec; display: flex; gap: 6px; line-height: 1.45; }
+  .interv-list li:last-child { border-bottom: none; }
+  .trend-up { color: #D85A30; font-size: 15px; font-weight: 700; }
+  .trend-down { color: #1D9E75; font-size: 15px; font-weight: 700; }
+  .trend-stable { color: #898781; font-size: 15px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Dashboard IPU Kedah</h1>
+    <p id="header-subtitle">Sumber: APIMS (Menunggu data...)</p>
+  </div>
+  <span id="main-badge" class="badge badge-sederhana">Memuat...</span>
+</header>
+
+<div class="container">
+
+  <!-- Alert -->
+  <div class="alert" id="main-alert" style="display:none;">
+    <strong>⚠ Amaran Kualiti Udara — Kedah</strong>
+    Bacaan IPU di sesetengah kawasan berada pada tahap <strong>Tidak Sihat</strong>. Orang yang sensitif, kanak-kanak, dan warga emas disarankan untuk mengelak aktiviti luar rumah.
+  </div>
+
+  <!-- Refresh bar -->
+  <div class="refresh-bar">
+    <div class="refresh-info">
+      🔄 Data ditarik terus secara langsung dari Google Sheets<br>
+      <span>Kemaskini terakhir: <strong id="last-updated">—</strong> &nbsp;|&nbsp; Status: <span id="refresh-status" class="status-loading">Belum dimuat</span></span>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="fetchCSVData()">
+      <span id="refresh-icon">↻</span> Muat Data Terbaru
+    </button>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="section-title" id="stat-title">Ringkasan terkini</div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">IPU Tertinggi</div>
+      <div class="stat-val val-red">—</div>
+      <div class="stat-sub">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">IPU Terendah</div>
+      <div class="stat-val val-green">—</div>
+      <div class="stat-sub">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Purata Kedah</div>
+      <div class="stat-val">—</div>
+      <div class="stat-sub">Stesen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Stesen Tidak Sihat</div>
+      <div class="stat-val val-red">—</div>
+      <div class="stat-sub">Stesen dipantau</div>
+    </div>
+  </div>
+
+  <!-- IPU Scale -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-title" style="margin-bottom:0.75rem;">Skala Indeks Pencemaran Udara (IPU)</div>
+    <div class="scale-bar"></div>
+    <div class="scale-labels">
+      <span>0 — Baik</span>
+      <span>51 — Sederhana</span>
+      <span>101 — Tidak Sihat</span>
+      <span>201 — Sangat Tidak Sihat</span>
+      <span>300+ — Berbahaya</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Station table -->
+    <div class="card">
+      <div class="section-title">Bacaan setiap stesen</div>
+      <table class="station-table">
+        <thead>
+          <tr>
+            <th>Stesen</th>
+            <th style="text-align:right;">IPU</th>
+            <th style="text-align:center;">Trend</th>
+            <th style="text-align:right;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data akan dimasukkan oleh JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Map -->
+    <div class="card">
+      <div class="section-title">Peta lokasi stesen</div>
+      <svg id="map-svg" viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+        <!-- Kedah outline -->
+        <path d="M65,35 L85,22 L115,18 L145,22 L168,30 L182,48 L190,68 L196,90 L200,115 L198,138 L190,155 L178,168 L162,178 L145,184 L128,176 L115,163 L102,150 L88,140 L72,132 L58,118 L52,98 L55,74 L62,55 Z"
+              fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+        <!-- Perlis -->
+        <path d="M85,22 L100,12 L120,10 L115,18 Z" fill="#D3D1C7" stroke="#888780" stroke-width="0.7"/>
+        <text x="102" y="16" font-size="7" fill="#5F5E5A" text-anchor="middle">Perlis</text>
+        <!-- Penang -->
+        <ellipse cx="52" cy="140" rx="10" ry="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.7"/>
+        <text x="52" y="153" font-size="7" fill="#185FA5" text-anchor="middle">P. Pinang</text>
+        <!-- Perak -->
+        <path d="M178,168 L188,178 L192,198 L188,210 L172,200 L162,178 Z" fill="#D3D1C7" stroke="#888780" stroke-width="0.7"/>
+        <text x="182" y="196" font-size="7" fill="#5F5E5A" text-anchor="middle">Perak</text>
+        <!-- KEDAH label -->
+        <text x="125" y="98" font-size="12" font-weight="600" fill="#0F6E56" text-anchor="middle">KEDAH</text>
+        <!-- Langkawi island -->
+        <ellipse cx="42" cy="62" rx="13" ry="7" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.7"/>
+        
+        <!-- Legend -->
+        <rect x="4" y="210" width="272" height="26" rx="5" fill="#f4f3ee"/>
+        <circle cx="18" cy="223" r="4" fill="#D85A30"/>
+        <text x="25" y="227" font-size="8" fill="#52514e">Tidak Sihat (101–200)</text>
+        <circle cx="130" cy="223" r="4" fill="#1D9E75"/>
+        <text x="137" y="227" font-size="8" fill="#52514e">Sederhana (51–100)</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Trend Chart -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-title">Trend IPU mengikut stesen</div>
+    <div class="tabs" id="station-tabs"></div>
+    <div class="legend-row">
+      <span class="leg"><span class="leg-sq" style="background:#EAF3DE;border:1px solid #639922;"></span>Baik (0–50)</span>
+      <span class="leg"><span class="leg-sq" style="background:#FAEEDA;border:1px solid #BA7517;"></span>Sederhana (51–100)</span>
+      <span class="leg"><span class="leg-sq" style="background:#FAECE7;border:1px solid #D85A30;"></span>Tidak Sihat (101–200)</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="trendChart" role="img" aria-label="Carta garisan trend IPU stesen di Kedah">Carta trend IPU Kedah</canvas>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<footer>
+  Sumber data: APIMS (Air Pollutant Index of Malaysia) — Jabatan Alam Sekitar Malaysia<br>
+  Dashboard ini membaca data secara terus dari Google Sheets.
+</footer>
+
+<script>
+// Objek untuk simpan data stesen secara dinamik
+let stationData = {};
+
+// Koordinat peta kasar untuk stesen (Langkawi, Alor Setar, Sg Petani, Kulim, dsb)
+// Boleh ditambah mengikut keperluan Station ID (CA02K, CA03K, dll)
+const mapCoordinates = {
+  'CA02K': { cx: 42, cy: 62 },   // Langkawi
+  'CA03K': { cx: 95, cy: 88 },   // Alor Setar
+  'CA04K': { cx: 138, cy: 152 }, // Sg Petani
+  'CA05K': { cx: 170, cy: 148 }  // Kulim
+};
+
+// Warna untuk setiap stesen dalam carta
+const chartColors = ['#2a78d6', '#D85A30', '#eb6834', '#1baf7a', '#8b3a8b', '#f0c040'];
+
+let activeChart = null;
+const tabsEl = document.getElementById('station-tabs');
+
+function initTabs() {
+  tabsEl.innerHTML = '';
+  Object.keys(stationData).forEach((id, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = stationData[id].name;
+    btn.onclick = () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderChart(id);
+    };
+    tabsEl.appendChild(btn);
+  });
+  
+  if(Object.keys(stationData).length > 0) {
+    renderChart(Object.keys(stationData)[0]);
+  }
+}
+
+function renderChart(stId) {
+  const sd = stationData[stId];
+  if (!sd) return;
+  
+  const labels = sd.data.map(d => d.t);
+  const values = sd.data.map(d => d.v);
+
+  if (activeChart) activeChart.destroy();
+
+  activeChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: sd.name,
+        data: values,
+        borderColor: sd.color,
+        backgroundColor: sd.color + '18',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: sd.color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              const s = v <= 50 ? 'Baik' : v <= 100 ? 'Sederhana' : v <= 200 ? 'Tidak Sihat' : 'Sangat Tidak Sihat';
+              return ' IPU: ' + v + ' (' + s + ')';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#898781', font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 10 },
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        },
+        y: {
+          min: 0,
+          ticks: { color: '#898781', font: { size: 11 }, stepSize: 20 },
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        }
+      }
+    }
+  });
+}
+
+// ── PENGAMBILAN DATA DARI GOOGLE SHEETS ──────────────────────────────────────
+const SHEET_ID = '1V_GWnMBPQ0SjFCQ9Noba5O-EoqFfgPX3kPPMs8Bxe0Y';
+
+// Menggunakan endpoint Google Visualization API untuk elak masalah CORS
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+const REFRESH_INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 jam
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n').slice(1); // Buang header (baris pertama)
+  const records = [];
+  
+  lines.forEach(line => {
+    // Regex ini memecahkan CSV dengan betul walaupun ada teks berkomma dalam pengikat kata ("Langkawi, Kedah")
+    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+    
+    // Buang pengikat kata (quotes) dan ruang kosong (whitespace)
+    const cleanCols = cols.map(c => c.replace(/^"|"$/g, '').trim());
+    
+    if (cleanCols.length >= 4 && cleanCols[0] && cleanCols[3]) {
+      records.push({ 
+        timestamp: cleanCols[0], 
+        stationId: cleanCols[1], 
+        location: cleanCols[2], 
+        api: parseFloat(cleanCols[3]) 
+      });
+    }
+  });
+  return records;
+}
+
+function groupByStation(records) {
+  const map = {};
+  records.forEach(r => {
+    if (!map[r.stationId]) map[r.stationId] = [];
+    map[r.stationId].push(r);
+  });
+  return map;
+}
+
+function getStatusLabel(v) {
+  if (v <= 50) return 'Baik';
+  if (v <= 100) return 'Sederhana';
+  if (v <= 200) return 'Tidak Sihat';
+  return 'Sangat Tidak Sihat';
+}
+
+function getBadgeClass(v) {
+  if (v <= 50) return 'badge-baik';
+  if (v <= 100) return 'badge-sederhana';
+  return 'badge-tidak-sihat';
+}
+
+function getValColor(v) {
+  if (v <= 50) return '#1D9E75'; // Hijau
+  if (v <= 100) return '#BA7517'; // Kuning/Oren gelap
+  return '#D85A30'; // Merah
+}
+
+// Fungsi bantu untuk ekstrak masa hh:mm dari datetime "2026-08-28 18:00:00"
+function formatTimeOnly(datetimeStr) {
+  try {
+    const d = new Date(datetimeStr);
+    return d.toLocaleTimeString('ms-MY', {hour: '2-digit', minute:'2-digit'});
+  } catch(e) {
+    return datetimeStr.length > 16 ? datetimeStr.substring(11, 16) : datetimeStr;
+  }
+}
+
+function updateDashboard(records) {
+  const grouped = groupByStation(records);
+  stationData = {}; // Reset
+
+  let colorIndex = 0;
+  
+  // Bina semula stationData untuk carta
+  Object.keys(grouped).forEach(id => {
+    const rows = grouped[id];
+    // Pastikan data disusun mengikut masa (lama ke baru)
+    rows.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    stationData[id] = {
+      name: rows[0].location.split(',')[0].trim(),
+      color: chartColors[colorIndex % chartColors.length],
+      data: rows.map(r => ({ t: formatTimeOnly(r.timestamp), v: r.api }))
+    };
+    colorIndex++;
+  });
+
+  // Dapatkan bacaan TERKINI untuk setiap stesen
+  const latestMap = {};
+  records.forEach(r => {
+    if (!latestMap[r.stationId] || r.timestamp > latestMap[r.stationId].timestamp) {
+      latestMap[r.stationId] = r;
+    }
+  });
+
+  const latestVals = Object.values(latestMap).map(r => r.api).filter(v => !isNaN(v));
+  if (latestVals.length === 0) return;
+
+  const maxVal = Math.max(...latestVals);
+  const minVal = Math.min(...latestVals);
+  const avgVal = Math.round(latestVals.reduce((a, b) => a + b, 0) / latestVals.length);
+  const unhealthyCount = latestVals.filter(v => v > 100).length;
+
+  // Kemaskini Stat Cards
+  document.querySelector('.stat-card:nth-child(1) .stat-val').textContent = maxVal;
+  document.querySelector('.stat-card:nth-child(1) .stat-val').style.color = getValColor(maxVal);
+  document.querySelector('.stat-card:nth-child(1) .stat-sub').textContent = latestMap[Object.keys(latestMap).find(k => latestMap[k].api === maxVal)]?.location.split(',')[0] || '—';
+
+  document.querySelector('.stat-card:nth-child(2) .stat-val').textContent = minVal;
+  document.querySelector('.stat-card:nth-child(2) .stat-val').style.color = getValColor(minVal);
+  document.querySelector('.stat-card:nth-child(2) .stat-sub').textContent = latestMap[Object.keys(latestMap).find(k => latestMap[k].api === minVal)]?.location.split(',')[0] || '—';
+
+  document.querySelector('.stat-card:nth-child(3) .stat-val').textContent = avgVal;
+  document.querySelector('.stat-card:nth-child(4) .stat-val').textContent = unhealthyCount + '/' + latestVals.length;
+  document.querySelector('.stat-card:nth-child(4) .stat-val').style.color = unhealthyCount > 0 ? '#D85A30' : '#1D9E75';
+
+  // Kemaskini Jadual Stesen
+  const tbody = document.querySelector('.station-table tbody');
+  tbody.innerHTML = '';
+  
+  // Kemaskini Titik Peta
+  const mapSvg = document.getElementById('map-svg');
+  // Padam titik sedia ada (elak titik bertindih jika refresh)
+  mapSvg.querySelectorAll('.dynamic-point').forEach(el => el.remove());
+
+  Object.entries(latestMap).forEach(([id, r]) => {
+    const v = r.api;
+    const locName = r.location.split(',')[0].trim();
+    
+    // Kira Trend (3 bacaan terakhir)
+    const rows = (grouped[id] || []).slice(-3).map(x => x.api);
+    let trendArrow = '<span class="trend-stable">→</span><br><span style="font-size:10px;color:#898781;">Kekal</span>';
+    if (rows.length >= 2) {
+      const delta = rows[rows.length - 1] - rows[0];
+      if (delta >= 3) trendArrow = '<span class="trend-up">↑</span><br><span style="font-size:10px;color:#D85A30;">Menaik</span>';
+      else if (delta <= -3) trendArrow = '<span class="trend-down">↓</span><br><span style="font-size:10px;color:#1D9E75;">Menurun</span>';
+    }
+    
+    // Masukkan ke jadual
+    tbody.innerHTML += `<tr>
+      <td>
+        <div style="font-weight:500;">${locName}</div>
+        <div style="font-size:11px;color:#898781;">${id}</div>
+      </td>
+      <td style="text-align:right;"><span class="ipu-num" style="color:${getValColor(v)};">${v}</span></td>
+      <td style="text-align:center;">${trendArrow}</td>
+      <td style="text-align:right;"><span class="badge ${getBadgeClass(v)}">${getStatusLabel(v)}</span></td>
+    </tr>`;
+
+    // Lukis titik di peta
+    if(mapCoordinates[id]) {
+      const coords = mapCoordinates[id];
+      const pointColor = getValColor(v);
+      
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      g.setAttribute('class', 'dynamic-point');
+      
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute('cx', coords.cx);
+      circle.setAttribute('cy', coords.cy);
+      circle.setAttribute('r', '8');
+      circle.setAttribute('fill', pointColor);
+      circle.setAttribute('stroke', 'white');
+      circle.setAttribute('stroke-width', '1.5');
+      
+      const textVal = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      textVal.setAttribute('x', coords.cx);
+      textVal.setAttribute('y', coords.cy + 3);
+      textVal.setAttribute('font-size', '7');
+      textVal.setAttribute('font-weight', '600');
+      textVal.setAttribute('fill', 'white');
+      textVal.setAttribute('text-anchor', 'middle');
+      textVal.textContent = v;
+      
+      const textLoc = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      textLoc.setAttribute('x', coords.cx);
+      textLoc.setAttribute('y', coords.cy + 16);
+      textLoc.setAttribute('font-size', '7');
+      textLoc.setAttribute('fill', pointColor);
+      textLoc.setAttribute('text-anchor', 'middle');
+      textLoc.textContent = locName;
+
+      g.appendChild(circle);
+      g.appendChild(textVal);
+      g.appendChild(textLoc);
+      mapSvg.appendChild(g);
+    }
+  });
+
+  // Header dan Status Global
+  const latestTimeRaw = Object.values(latestMap).map(r => r.timestamp).sort().pop();
+  if (latestTimeRaw) {
+    try {
+      const d = new Date(latestTimeRaw);
+      const fmt = d.toLocaleString('ms-MY', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      document.getElementById('stat-title').textContent = 'Ringkasan terkini (' + fmt + ')';
+      document.getElementById('header-subtitle').textContent = 'Sumber: APIMS • Data terkini: ' + fmt;
+    } catch(e) {
+      document.getElementById('header-subtitle').textContent = 'Sumber: APIMS • Data: ' + latestTimeRaw;
+    }
+  }
+
+  // Update Main Badge (Top right)
+  const mainBadge = document.getElementById('main-badge');
+  mainBadge.className = 'badge ' + getBadgeClass(maxVal);
+  mainBadge.textContent = maxVal > 100 ? '⚠ Tidak Sihat' : (maxVal > 50 ? 'Sederhana' : 'Baik');
+  
+  // Show alert jika tidak sihat
+  document.getElementById('main-alert').style.display = maxVal > 100 ? 'block' : 'none';
+
+  // Bina semula Tabs
+  initTabs();
+}
+
+async function fetchCSVData() {
+  const btn = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  const statusEl = document.getElementById('refresh-status');
+  const lastEl = document.getElementById('last-updated');
+
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spin">↻</span>';
+  statusEl.className = 'status-loading';
+  statusEl.textContent = 'Sedang memuat data dari gsheets...';
+
+  try {
+    const res = await fetch(CSV_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const records = parseCSV(text);
+
+    if (records.length === 0) throw new Error('Tiada data ditemui dalam hamparan (sheet).');
+
+    updateDashboard(records);
+
+    const now = new Date().toLocaleString('ms-MY', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second:'2-digit' });
+    lastEl.textContent = now;
+    statusEl.className = 'status-ok';
+    statusEl.textContent = '✓ Berjaya (' + records.length + ' rekod)';
+  } catch (err) {
+    statusEl.className = 'status-err';
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      statusEl.textContent = '✗ Gagal CORS — Pastikan fail Sheets "Anyone with the link can view"';
+    } else {
+      statusEl.textContent = '✗ Ralat: ' + err.message;
+    }
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '↻';
+  }
+}
+
+// Auto-refresh setiap 2 jam
+setInterval(fetchCSVData, REFRESH_INTERVAL_MS);
+
+// Cuba fetch pada muat pertama
+window.onload = fetchCSVData;
+</script>
+</body>
+</html>
+```
